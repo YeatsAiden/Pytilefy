@@ -1,5 +1,5 @@
-from settings import *
-from core_funcs import *
+from .consts import *
+from .core_funcs import *
 
 
 class Level:

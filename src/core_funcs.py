@@ -1,5 +1,7 @@
-from settings import *
+import pygame as pg
+import json
 
+from .consts import *
 
 def clip_img(surf, x: int, y: int, width: int, height: int):
     img_copy = surf.copy()
@@ -76,3 +78,13 @@ def load_json(path: str):
     with open(path) as f:
         json_data = json.load(f)
     return json_data
+
+def draw_grid()
+    for y in range(int(window_pos.y)//TILE_SIZE, (int(window_pos.y) + DISPLAY_HEIGHT)//TILE_SIZE + 1):
+        pg.draw.line(display, (50, 50, 50), (0, y * TILE_SIZE - cam_pos.y), (DISPLAY_WIDTH, y * TILE_SIZE - cam_pos.y), 2)
+
+    for x in range(int(window_pos.x)//TILE_SIZE, (int(window_pos.x) + DISPLAY_WIDTH)//TILE_SIZE + 1):
+        pg.draw.line(display, (50, 50, 50), (x * TILE_SIZE - cam_pos.x, 0), (x * TILE_SIZE - cam_pos.x, DISPLAY_HEIGHT), 2)
+
+    pg.draw.line(display, (80, 80, 200), (0, 0 - cam_pos.y), (DISPLAY_WIDTH, 0 - cam_pos.y), 2)
+    pg.draw.line(display, (200, 80, 80), (0 - cam_pos.x, 0), (0 - cam_pos.x, DISPLAY_HEIGHT), 2)

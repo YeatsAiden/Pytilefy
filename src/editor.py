@@ -1,6 +1,6 @@
-from settings import *
-from core_funcs import *
-from ui import *
+from .consts import *
+from .core_funcs import *
+from .ui import *
 
 
 class Editor:

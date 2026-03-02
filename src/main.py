@@ -1,15 +1,23 @@
-from settings import *
-from ui import Button, Font
-from level import *
-from editor import Editor
+import pygame as pg
+import time, sys
+
+from .consts import *
+from .core_funcs import *
+from .ui import Button, Font
+from .level import Level
+from .editor import Editor
+from .camera import Camera
 
 # Initial setup
 pg.init()
 
-window = pg.display.set_mode(WINDOW_SIZE, FLAGS)
+window = pg.display.set_mode(WINDOW_SIZE, pg.RESIZABLE)
 display = pg.Surface(DISPLAY_SIZE)
 clock = pg.time.Clock()
+
 pg.mouse.set_visible(MOUSE_VISIBLE)
+
+camera = Camera(0, 0, 1, 1)
 
 # Loading assets
 objects = load_images(PATHS["objects"])
@@ -18,7 +26,6 @@ tile_sets = {file.split('.')[0]: make_tileset_dict(PATHS['tilesets'] + "/" + fil
 tile_sets_rules = {file.split('.')[0]: load_json(PATHS['tilesets'] + "/" + file) for file in get_file_names(PATHS['tilesets']) if file.split('.')[1] == "json"}
 
 smol_font = Font(PATHS["fonts"] + "/" + "smol_font.png", [1, 2, 3], 1)
-
 new_layer = Button(PATHS["buttons"] + "/" + "new_layer.png", DISPLAY_WIDTH - 36, 4)
 next_layer = Button(PATHS["buttons"] + "/" + "next_layer.png")
 prev_layer = Button(PATHS["buttons"] + "/" + "prev_layer.png")
@@ -29,11 +36,11 @@ cursor_image = pg.image.load(PATHS["cursors"] + "/" + "cursor.png").convert_alph
 level_editor = Editor(objects, spawns, tile_sets, tile_sets_rules, TILE_SIZE)
 
 # Display stuff
+window_pos = pg.Vector2(-window.get_width()/2, -window.get_height()/2)
 cam_pos = pg.Vector2(0, 0)
 xy_change = [0, 0]
 scale = 1
-window_pos = pg.Vector2(-window.get_width()/2, -window.get_height()/2)
-
+camera.target = cam_pos
 # Game loop
 while True:
     display.fill("black")
@@ -65,23 +72,15 @@ while True:
 
     if prev_layer.check_click([mouse_x, mouse_y], mouse_pressed, current_time):
         level_editor.current_layer -= 1
-        
+
     elif mouse_pressed[0]:
         level_editor.place_tile(tile_pos_key)
     elif mouse_pressed[2] and tile_pos_key in level_editor.levels[level_editor.current_level][str(level_editor.current_layer)]:
         level_editor.delete_tile(tile_pos_key)
-    
+
     level_editor.current_layer = max(0, min(len(level_editor.levels[level_editor.current_level]) - 1, level_editor.current_layer))
 
     # Draw grid
-    for y in range(int(window_pos.y)//TILE_SIZE, (int(window_pos.y) + DISPLAY_HEIGHT)//TILE_SIZE + 1):
-        pg.draw.line(display, (50, 50, 50), (0, y * TILE_SIZE - cam_pos.y), (DISPLAY_WIDTH, y * TILE_SIZE - cam_pos.y), 2)
-    
-    for x in range(int(window_pos.x)//TILE_SIZE, (int(window_pos.x) + DISPLAY_WIDTH)//TILE_SIZE + 1):
-        pg.draw.line(display, (50, 50, 50), (x * TILE_SIZE - cam_pos.x, 0), (x * TILE_SIZE - cam_pos.x, DISPLAY_HEIGHT), 2)
-
-    pg.draw.line(display, (80, 80, 200), (0, 0 - cam_pos.y), (DISPLAY_WIDTH, 0 - cam_pos.y), 2)
-    pg.draw.line(display, (200, 80, 80), (0 - cam_pos.x, 0), (0 - cam_pos.x, DISPLAY_HEIGHT), 2)
 
     # draw level
     area = level_editor.get_area(cam_pos)
@@ -136,7 +135,7 @@ while True:
                 level_editor.current_layer += 1
             if event.key == pg.K_a:
                 level_editor.current_layer -= 1
-            
+
             if event.key == pg.K_e:
                 level_editor.type_id += 1
                 level_editor.type_id = max(0, min(len(level_editor.image_type) - 1, level_editor.type_id))  
@@ -146,7 +145,6 @@ while True:
                 level_editor.type_id = max(0, min(len(level_editor.image_type) - 1, level_editor.type_id))  
                 level_editor.current_item = list(level_editor.types[level_editor.image_type[level_editor.type_id]])[0]
   
-
     # Resizing display to window size
     display_cp, xy_change, scale = resize_surface(window, display)
     window.blit(display_cp, xy_change)

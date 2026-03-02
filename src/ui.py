@@ -1,6 +1,8 @@
 from typing import Any
-from settings import *
-from core_funcs import *
+import time
+
+from .consts import *
+from .core_funcs import *
 
 
 class Button:
