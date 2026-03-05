@@ -1,5 +1,6 @@
 import pygame as pg
 
-class Mouse:
-    def __init__():
-        pass
+
+class Mouse(pg.sprite.Sprite):
+    def __init__(self) -> None:
+        super().__init__()

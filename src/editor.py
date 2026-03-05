@@ -1,69 +1,15 @@
-from .consts import *
+from .settings import *
+from .common import *
 from .core_funcs import *
 from .ui import *
 
 
 class Editor:
-    def __init__(self, objects: dict, spawns: dict, tile_sets: dict, tile_set_rules: dict, tile_size: int, level_path: str = None) -> None:
-        self.tile_size = tile_size
-
-        self.types = {
-            "tiles": tile_sets,
-            "objects": objects,
-            "spawns": spawns,
-        }
-        self.image_type = list(self.types)
-        self.type_id = 0
-
-        self.current_item = list(self.types[self.image_type[self.type_id]])[0]
-
-        self.tile_set_rules = tile_set_rules
-
-        self.levels = {}
-        self.current_level = str(len(get_file_names(PATHS['levels'])))
-        self.current_layer = 0
-
-        self.collision = True
-        self.visible = True
-
-        self.buttons = {}
-        for image_type in self.image_type:
-            if image_type == "tiles":
-                self.buttons["tiles"] = {}
-                for i, tile_set in enumerate(self.types[image_type]):
-                    self.buttons["tiles"][tile_set] = Button(self.types[image_type][tile_set][27], 4 + i * TILE_SIZE, 4)
-                    self.buttons["tiles"][tile_set].id = tile_set
-            else:
-                self.buttons[image_type] = {}
-                for i, image in enumerate(self.types[image_type]):
-                    self.buttons[image_type][image] = Button(self.types[image_type][image], 4 * i + i * TILE_SIZE, 4)
-                    self.buttons[image_type][image].id = image
-                    
-        
-        if get_file_names(PATHS['levels']):
-            if level_path == None:
-                for path in get_file_names(PATHS['levels']):
-                    level_name, level_data = path.split(".")[0], load_json(PATHS['levels'] + '/' + path)
-                    self.current_level = level_name
-                    self.levels[level_name] = level_data
-            else:
-                level_name, level_data = level_path.split(".")[0], load_json(level_path)
-                self.current_level = level_name
-                self.levels[level_name] = level_data
-        else:
-            self.current_level = len(get_file_names(PATHS['levels']))
-            self.levels[self.current_level] = {
-                "0": {},
-            }
-    
-
-    def toggle_visible(self):
-        self.visible = not self.visible
-
-
-    def toggle_collision(self):
-        self.collision = not self.collision
-
+    def __init__(self, file_path: pg.typing.FileLike) -> None:
+        self.level = {}
+        if file_path:
+            with open(file_path, "w") as f:
+                self.level = json.load(f)
 
     def place_tile(self, tile_pos_key: str):
         self.levels[self.current_level][str(self.current_layer)][tile_pos_key] = {

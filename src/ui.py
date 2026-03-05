@@ -17,8 +17,7 @@ class Button:
 
         self.click_cooldown = 1
         self.time_since_click = 0
-        
-    
+
     def check_click(self, mouse_pos, mouse_pressed, current_time):
         click = False
 
@@ -28,14 +27,14 @@ class Button:
             click = True
         # return if clicked
         return click
-    
+
     def set_position(self, x: int, y: int):
         self.rect.topleft = [x, y]
 
     def draw(self, surf: pg.Surface):
         surf.blit(self.button_img, (self.rect.x, self.rect.y))
 
-        
+
 class Font:
     def __init__(self, path: str, include: list[int, int, int], step: int) -> None:
         self.characters = ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", "0123456789", "!@#$%^&*()`~-_=+\\|[]}{';:/?.>,<"]
