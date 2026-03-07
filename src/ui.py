@@ -1,8 +1,8 @@
+import pygame as pg
 from typing import Any
 import time
 
-from .consts import *
-from .core_funcs import *
+from .settings import *
 
 
 class Button:
@@ -20,12 +20,9 @@ class Button:
 
     def check_click(self, mouse_pos, mouse_pressed, current_time):
         click = False
-
-        # check mouseover and clicked conditions
         if self.rect.collidepoint(mouse_pos) and mouse_pressed[0] and (current_time - self.time_since_click) > self.click_cooldown:
             self.time_since_click = time.time()
             click = True
-        # return if clicked
         return click
 
     def set_position(self, x: int, y: int):
@@ -36,18 +33,15 @@ class Button:
 
 
 class Font:
-    def __init__(self, path: str, include: list[int, int, int], step: int) -> None:
+    def __init__(self, path: str, include: list[int], step: int) -> None:
         self.characters = ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", "0123456789", "!@#$%^&*()`~-_=+\\|[]}{';:/?.>,<"]
-
         self.font = self.load_font(path, include, step)
-    
-    def load_font(self, path: str, include: list[int, int, int], step: int):
+
+    def load_font(self, path: str, include: list[int], step: int):
         font_img = pg.image.load(path).convert()
         font_img.set_colorkey((0, 0, 0))
-        
         characters = []
         font = {}
-
         x_pos = 0
 
         for x in range(font_img.get_width()):
@@ -63,13 +57,11 @@ class Font:
                         character = pg.Surface((cp_surface.get_width(), cp_surface.get_height() + step))
                         character.blit(cp_surface, (0, step))
                     characters.append(character)
-        
         for i in include:
             for character in self.characters[i]:
                 font[character] = characters[len(font)]
-        
         return font
-    
+
     def draw_text(self, surface: pg.Surface, text: str, x: int, y: int, space: int, size: int):
         x_pos = 0
         for letter in text:

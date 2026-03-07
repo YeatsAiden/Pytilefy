@@ -1,22 +1,23 @@
 import pygame as pg
 
-from camera import Camera
+from .camera import Camera
 from .settings import *
 
 
 class Grid(pg.sprite.Sprite):
     def __init__(self) -> None:
-        super().__init__()
+        pg.sprite.Sprite.__init__(self)
         self.image: pg.Surface = pg.Surface(DISPLAY_SIZE)
+        self.rect: pg.FRect = pg.FRect()
+        self.layer = 0
 
     def update(self, camera) -> None:
-        y_range = (int(camera.view_rect.y) + DISPLAY_HEIGHT)//TILE_SIZE - int(camera.view_rect.y)//TILE_SIZE + 1
-        x_range = (int(camera.view_rect.x) + DISPLAY_WIDTH)//TILE_SIZE - int(camera.view_rect.x)//TILE_SIZE + 1
+        self.image.fill("black")
 
-        for y in range(y_range):
+        for y in range(int(camera.scroll.y)//TILE_SIZE, (int(camera.scroll.y) + DISPLAY_HEIGHT)//TILE_SIZE):
             pg.draw.line(self.image, (50, 50, 50), (0, y * TILE_SIZE - camera.scroll.y), (DISPLAY_WIDTH, y * TILE_SIZE - camera.scroll.y), 2)
 
-        for x in range(x_range):
+        for x in range(int(camera.scroll.x)//TILE_SIZE, (int(camera.scroll.x) + DISPLAY_WIDTH)//TILE_SIZE):
             pg.draw.line(self.image, (50, 50, 50), (x * TILE_SIZE - camera.scroll.x, 0), (x * TILE_SIZE - camera.scroll.x, DISPLAY_HEIGHT), 2)
 
         pg.draw.line(self.image, (80, 80, 200), (0, 0 - camera.scroll.y), (DISPLAY_WIDTH, 0 - camera.scroll.y), 2)

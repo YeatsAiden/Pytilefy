@@ -18,6 +18,8 @@ class Camera(pg.sprite.LayeredUpdates):
         self.to_center: pg.Vector2 = pg.Vector2()
         self.scale: float = 1
 
+        self.zoom: float = 1
+
     @property
     def target(self) -> pg.Vector2:
         return self._target
@@ -30,9 +32,9 @@ class Camera(pg.sprite.LayeredUpdates):
     def pos(self) -> pg.Vector2:
         return pg.Vector2(self._view_rect.topleft)
 
-    @target.setter
+    @pos.setter
     def pos(self, value: pg.typing.Point) -> None:
-        self._view_rect = value
+        self._view_rect.topleft = pg.Vector2(value)
 
     @property
     def mouse_pos_display(self) -> pg.Vector2:
@@ -43,11 +45,10 @@ class Camera(pg.sprite.LayeredUpdates):
 
     def follow_target(self, dt: float) -> None:
         self._view_rect.center = self.target
-        self.scroll.x += (self._view_rect.centerx - self.scroll.x)/5
-        self.scroll.y += (self._view_rect.centery - self.scroll.y)/5
+        self.scroll.x += (self._view_rect.x - self.scroll.x)
+        self.scroll.y += (self._view_rect.y - self.scroll.y)
 
     def render_sprites(self, dt: float) -> None:
-        self.follow_target(dt)
         layers = self.layers()
         for layer in layers:
             for sprite in self.get_sprites_from_layer(layer):
@@ -56,7 +57,7 @@ class Camera(pg.sprite.LayeredUpdates):
     def resize_display(self, window :pg.Surface) -> None:
         self.scale = min(window.get_width() / self.display.get_width(), window.get_height() / self.display.get_height())
         self.frame = pg.transform.scale_by(self.display, self.scale)
-        self.xy_change = [(window.get_width() - self.frame.get_width()) // 2, (window.get_height() - self.frame.get_height()) // 2]
+        self.to_center = pg.Vector2((window.get_width() - self.frame.get_width()) // 2, (window.get_height() - self.frame.get_height()) // 2)
 
     def render_display(self, window: pg.Surface, dt: float) -> None:
         self.display.fill("black")
@@ -66,8 +67,12 @@ class Camera(pg.sprite.LayeredUpdates):
 
     def move(self, dt: float) -> None:
         keys_pressed = pg.key.get_pressed()
-        self._view_rect.y -= keys_pressed[pg.K_UP] * 5
-        self._view_rect.y += keys_pressed[pg.K_DOWN] * 5
-        self._view_rect.x += keys_pressed[pg.K_RIGHT] * 5
-        self._view_rect.x -= keys_pressed[pg.K_LEFT] * 5
+        self.target.y -= keys_pressed[pg.K_UP] * 500 * dt
+        self.target.y += keys_pressed[pg.K_DOWN] * 500 * dt
+        self.target.x += keys_pressed[pg.K_RIGHT] * 500 * dt
+        self.target.x -= keys_pressed[pg.K_LEFT] * 500 * dt
 
+    def zoom_in(self, dt: float) -> None:
+        keys_pressed = pg.key.get_pressed()
+        self.zoom += keys_pressed[pg.K_z] * dt * 5
+        self.zoom -= keys_pressed[pg.K_c] * dt * 5
