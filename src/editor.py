@@ -9,7 +9,15 @@ from .level import Level
 
 class Editor:
     def __init__(self, file_path: pg.typing.FileLike) -> None:
-        self.level = Level(file_path)
+        self.level: Level = Level(file_path)
+
+        # 21 is the single tile
+        self.current_level: int = 0
+        self.tileset_id: str = ""
+
+        self.is_visible = True
+        self.has_collisions = True
+        self.on_grid = True
 
     def place_tile(self, tile_pos_key: str):
         pass

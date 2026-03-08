@@ -1,0 +1,13 @@
+{
+    "type": "prop",
+    "id": "props",
+    "is_visible": true,
+    "has_collisions": true,
+    "on_grid": false,
+    "sprites": {
+        "pot": {
+            "outline": {"x": 0, "y": 0, "w": 8, "h": 12},
+            "rect": {"x": 0, "y": 6, "w": 8, "h": 6}
+        }
+    }
+}

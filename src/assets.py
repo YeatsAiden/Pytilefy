@@ -34,28 +34,45 @@ def is_transparent(surface: pg.Surface):
                 return False
     return True
 
-def load_tileset(path: pathlib.Path):
+def load_tileset_from_dir(path: pathlib.Path):
     data = {}
 
-    try:
-        with open(path / "data.json", "r") as f:
-            data = json.load(f)
-    except:
-        print("Unable to load tileset")
-        return data
+    with open(str(path / "data.json"), "r") as f:
+        data = json.load(f)
 
     tileset = {}
-    tileset_image = pg.image.load(path / f"{data["tileset_id"]}.png").convert_alpha()
+    tileset_image = pg.image.load(path / "spritesheet.png").convert_alpha()
     for y in range(0, tileset_image.get_height(), TILE_SIZE):
         for x in range(0, tileset_image.get_width(), TILE_SIZE):
             img = clip_img(tileset_image, x, y, TILE_SIZE, TILE_SIZE)
             if not is_transparent(img):
                 tileset[y//TILE_SIZE * tileset_image.get_width()//TILE_SIZE + x//TILE_SIZE] = img
 
-    data.update({data["tileset_id"]: tileset})
+    data.update({data["id"]: data})
+    images.update({data["id"]: tileset})
 
-load_images_from_dir(ASSETS_DIRECTORY / "props")
-load_images_from_dir(ASSETS_DIRECTORY / "spawn")
-load_image(ASSETS_DIRECTORY / "cursor" / "cursor.png")
-load_tileset(ASSETS_DIRECTORY / "tilesets" / "grass")
+def load_spritesheet_from_dir(path: pathlib.Path):
+    data = {}
+
+    with open(str(path / "data.json"), "r") as f:
+        data = json.load(f)
+
+    spritesheet = {}
+    spritesheet_image = pg.image.load(path / "spritesheet.png").convert_alpha()
+    for sprite_id, sprite in data["sprites"].items():
+        outline = sprite["outline"]
+        x = outline["x"]
+        y = outline["y"]
+        w = outline["w"]
+        h = outline["h"]
+        spritesheet[sprite_id] = clip_img(spritesheet_image, x, y, w, h)
+
+    data.update({data["id"]: data})
+    images.update({data["id"]: spritesheet})
+
+def load_assets():
+    load_spritesheet_from_dir(ASSETS_DIRECTORY / "props")
+    load_spritesheet_from_dir(ASSETS_DIRECTORY / "spawns")
+    load_tileset_from_dir(ASSETS_DIRECTORY / "tilesets" / "grass")
+    load_image(ASSETS_DIRECTORY / "cursor" / "cursor.png")
 

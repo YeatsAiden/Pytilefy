@@ -1,6 +1,7 @@
 import pygame as pg
 import time, sys
 
+from .assets import load_assets
 from .settings import *
 from .common import *
 from .ui import Button, Font
@@ -27,11 +28,14 @@ class LevelEditor:
         self.camera.target = self.camera.pos
         self.level_editor = Editor(sys.argv[1])
         self.grid = Grid()
+        self.camera.add(self.grid)
+
+        load_assets()
+
         # smol_font = Font(PATHS["fonts"] + "/" + "smol_font.png", [1, 2, 3], 1)
         # new_layer = Button(PATHS["buttons"] + "/" + "new_layer.png", DISPLAY_WIDTH - 36, 4)
         # next_layer = Button(PATHS["buttons"] + "/" + "next_layer.png")
         # prev_layer = Button(PATHS["buttons"] + "/" + "prev_layer.png")
-        self.camera.add(self.grid)
 
         self.frame_time: float = 0;
 

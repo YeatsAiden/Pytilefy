@@ -1,0 +1,25 @@
+{
+    "type": "spawn",
+    "id": "spawns",
+    "is_visible": false,
+    "has_collisions": false,
+    "on_grid": true,
+    "sprites": {
+        "1": {
+            "outline": {"x": 0, "y": 0, "w": 16, "h": 16},
+            "rect": {"x": 0, "y": 0, "w": 16, "h": 16}
+        },
+        "2": {
+            "outline": {"x": 16, "y": 0, "w": 16, "h": 16},
+            "rect": {"x": 0, "y": 0, "w": 16, "h": 16}
+        },
+        "3": {
+            "outline": {"x": 0, "y": 16, "w": 16, "h": 16},
+            "rect": {"x": 0, "y": 0, "w": 16, "h": 16}
+        },
+        "4": {
+            "outline": {"x": 16, "y": 16, "w": 16, "h": 16},
+            "rect": {"x": 0, "y": 0, "w": 16, "h": 16}
+        }
+    }
+}

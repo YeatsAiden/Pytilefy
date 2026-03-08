@@ -37,7 +37,7 @@ class Camera(pg.sprite.LayeredUpdates):
         self._view_rect.topleft = pg.Vector2(value)
 
     @property
-    def mouse_pos_display(self) -> pg.Vector2:
+    def mouse_pos_on_display(self) -> pg.Vector2:
         mouse_x, mouse_y = pg.mouse.get_pos()
         mouse_x = (mouse_x - self.to_center[0])/self.scale
         mouse_y = (mouse_y - self.to_center[1])/self.scale
