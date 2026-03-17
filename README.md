@@ -1,4 +1,2 @@
 # Pytilefy
-A tile editor designed for pygame
-(is very much unfinished)
-TODO: Work on it ;-;
+A tile level editor and loader designed for pygame-ce
