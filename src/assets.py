@@ -10,7 +10,7 @@ data = {}
 
 def load_image(path: pathlib.Path):
     if path.name not in images:
-        images[path.name] = pg.image.load(path).convert_alpha()
+        images[path.stem] = pg.image.load(path).convert_alpha()
 
 def clip_img(surf, x: int, y: int, width: int, height: int):
     img_copy = surf.copy()

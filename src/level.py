@@ -8,10 +8,11 @@ from .common import *
 def tuple_to_json_coord(coord: tuple[int | float, int | float]) -> str:
     return f"{round(coord[0], 3)};{round(coord[1], 3)}"
 
-class Level:
+class Level(pg.sprite.Sprite):
     def __init__(self, file_path: pg.typing.FileLike) -> None:
+        pg.sprite.Sprite.__init__(self)
         self.file = str(file_path) + ".json"
-        self.level = {
+        self.level_data = {
             "layers": {},
             "height": 0,
             "width": 0,
@@ -23,29 +24,29 @@ class Level:
 
         try:
             with open(self.file, "r") as f:
-                self.level = json.load(f)
+                self.level_data = json.load(f)
         except:
             with open(self.file, "w") as f:
-                json.dump(self.level, f)
+                json.dump(self.level_data, f)
 
         # changes all the keys from
-        for layer in self.level["layers"].values():
+        for layer in self.level_data["layers"].values():
             layer["tiles"] = {(int(k[0]), int(k[2])): v for k, v in layer["tiles"].items()}
 
         self.level_rects = self.get_level_rects()
-        self.on_grid_tiles = {layer_id: set(layer["tiles"]) for layer_id, layer in self.level["layers"].items() if layer["on_grid"]}
-        self.layer_ids = sorted(list(self.level["layers"].keys()), key= lambda x: int(x))
+        self.on_grid_tiles = {layer_id: set(layer["tiles"]) for layer_id, layer in self.level_data["layers"].items() if layer["on_grid"]}
+        self.layer_ids = sorted(list(self.level_data["layers"].keys()), key= lambda x: int(x))
 
     def get_tile_coordinate_at(self, point: pg.Vector2) -> pg.Vector2:
         return pg.Vector2(point.x//TILE_SIZE, point.y//TILE_SIZE)
 
     def greedy_horizontal_merger(self):
         rects = {}
-        height = self.level["height"]
-        width = self.level["width"]
+        height = self.level_data["height"]
+        width = self.level_data["width"]
         visited = {(j, i): False for i in range(height) for j in range(width)}
 
-        for layer_id, layer in self.level["layers"].items():
+        for layer_id, layer in self.level_data["layers"].items():
             if not layer["has_collisions"] or not layer["on_grid"]:
                 continue
 
@@ -88,7 +89,7 @@ class Level:
     def get_off_grid_tiles(self):
         rects = {}
 
-        for layer_id, layer in self.level["layers"]:
+        for layer_id, layer in self.level_data["layers"]:
             if layer["on_grid"] or not layer["has_collisions"]:
                 continue
 
@@ -119,11 +120,11 @@ class Level:
         start_col = int(scroll.x // TILE_SIZE)
         end_col = int((scroll.x + DISPLAY_WIDTH) // TILE_SIZE) + 1
 
-        positions = {f"{x}:{y}" for y in range(start_row, end_row + 1) for x in range(start_col, end_col + 1)}
+        positions = {(x, y) for y in range(start_row, end_row + 1) for x in range(start_col, end_col + 1)}
 
         camera_rect = pg.FRect(scroll.x, scroll.y, DISPLAY_WIDTH, DISPLAY_HEIGHT)
 
-        for layer_id, layer in self.level["layers"].items():
+        for layer_id, layer in self.level_data["layers"].items():
             if not layer["on_grid"] and layer["is_visible"]:
                 for tile_position in layer["tiles"]:
                     if scroll.x <= tile_position[0] <= scroll.x + DISPLAY_WIDTH and scroll.y <= tile_position[1] <= scroll.y + DISPLAY_HEIGHT:
@@ -141,8 +142,8 @@ class Level:
             for tile_position in area[layer_id]:
                 x = int(tile_position[0])
                 y = int(tile_position[1])
-                tile = self.level["layers"][layer_id]["tiles"][tile_position]
+                tile = self.level_data["layers"][layer_id]["tiles"][tile_position]
                 tile_id = tile["id"]
                 tileset_id = tile["spritesheet_id"]
-                surface.blit(images[tileset_id][tile_id], (x, y))
+                surface.blit(images[tileset_id][tile_id], (x - scroll.x, y - scroll.y))
 
