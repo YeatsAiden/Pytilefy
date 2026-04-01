@@ -9,6 +9,7 @@ class Mouse(Entity):
         super().__init__()
         self.image: pg.Surface = images["cursor"]
         self.rect: pg.FRect = self.image.get_frect()
+        self.z = 100
 
     def update(self) -> None:
         self.pos.x, self.pos.y = pg.mouse.get_pos()

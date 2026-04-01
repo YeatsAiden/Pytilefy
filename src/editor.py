@@ -1,16 +1,17 @@
 import pygame as pg
+from pathlib import Path
 import json
 
+from . import settings
 from .camera import Camera
-from .settings import *
-from .common import *
-from .ui import *
 from .level import Level, tuple_to_json_coord
 
 
 class Editor:
-    def __init__(self, file_path: pg.typing.FileLike) -> None:
+    def __init__(self, file_path: Path) -> None:
         self.level: Level = Level(file_path)
+        settings.TILE_SIZE = self.level.level_data["tile_size"]
+        settings.CHUNK_SIZE = self.level.level_data["chunk_size"]
 
         # 21 is the single tile
         self.current_layer: int = 0
@@ -23,14 +24,18 @@ class Editor:
         self.on_grid = True
 
     def place_tile(self, camera: Camera):
-        tile_position = self.level.get_tile_coordinate_at(camera.mouse_pos_on_display)
+        tile_position = self.level.get_tile_pos_at(camera.mouse_pos_on_display)
         mouse_pressed = pg.mouse.get_pressed()
 
         if mouse_pressed[0]:
+            chunk_position = (tile_position.x//settings.CHUNK_SIZE, tile_position.y//settings.CHUNK_SIZE)
+
             if not self.level.level_data["layers"].get(self.current_layer):
                 self.level.level_data["layers"][self.current_layer] = {}
+                # if not self.level.level_data["layers"][self.current_layer][].get():
+                #     self.level.level_data["layers"][self.current_layer][] = {}
 
-            self.level.level_data["layers"][self.current_layer][(tile_position.x, tile_position.y)] = {
+            self.level.level_data["layers"][self.current_layer][chunk_position][tile_position] = {
                 "type": "tile",
                 "id": 0,
                 "spritesheet_id": "grass",

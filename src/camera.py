@@ -1,6 +1,8 @@
 import pygame as pg
 
 from .settings import *
+from .entity import Entity
+from .renderer import Renderer
 
 def ease_in_quart(x) -> float:
     return pg.math.clamp(x * x * x * x, 0, 1)

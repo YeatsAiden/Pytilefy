@@ -6,7 +6,7 @@ class Entity:
     def __init__(self) -> None:
         self.pos: pg.Vector2 = pg.Vector2()
         self.image: pg.Surface
-        self.group: str = "window"
+        self.target: str = "window"
         self.z: int = 0
 
     @property
@@ -21,5 +21,5 @@ class Entity:
         pass
 
     def blit(self, renderer: Renderer):
-        renderer.render(self.z, self.group, self.image, self.pos)
+        renderer.blit(self.z, self.target, self.image, self.pos)
 

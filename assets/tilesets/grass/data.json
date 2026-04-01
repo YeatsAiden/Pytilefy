@@ -1,7 +1,7 @@
 {
     "type": "tile",
     "id": "grass",
-    "tile_size": 16,
+    "tile_size": [16, 16],
     "rules": {
         "000011011": 0,
         "001011011": 0,

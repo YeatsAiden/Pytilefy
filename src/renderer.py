@@ -3,23 +3,23 @@ import pygame as pg
 
 # I swear this wasn't stolen
 class Renderer:
-    def __init__(self, groups) -> None:
-        self.groups = groups
-        self.queue: dict[str, list] = {group: [] for group in self.groups}
+    def __init__(self, targets: list[str]) -> None:
+        self.targets = targets + ["window"]
+        self.queue: dict[str, list] = {target_name: [] for target_name in self.targets}
         self.order: int = 0
 
     def clear(self):
         self.order = 0
-        for group in self.groups:
-            self.queue[group] = []
+        for target_name in self.targets:
+            self.queue[target_name] = []
 
-    def render(self, z: int, group: str, surface: pg.Surface, position):
-        self.queue[group].append([z, self.order, surface, position])
+    def blit(self, z: int, target: str, surface: pg.Surface, position):
+        self.queue[target].append([z, self.order, surface, position])
         self.order += 1
 
-    def render_sprites(self, surfaces: dict[str, pg.Surface]):
-        for group, surface in surfaces.items():
-            if group in self.queue:
-                self.queue[group].sort()
-                for sprite in self.queue[group]:
-                    surface.blit(sprite[2], sprite[3])
+    def render(self, targets: dict[str, pg.Surface]):
+        for target_name, target in targets.items():
+            if target_name in self.queue:
+                self.queue[target_name].sort(key = lambda x:x[0])
+                for sprite in self.queue[target_name]:
+                    target.blit(sprite[2], sprite[3])

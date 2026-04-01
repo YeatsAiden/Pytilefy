@@ -40,13 +40,15 @@ def load_tileset_from_dir(path: pathlib.Path):
     with open(str(path / "data.json"), "r") as f:
         data = json.load(f)
 
+    tile_size = data["tile_size"]
+
     tileset = {}
     tileset_image = pg.image.load(path / "spritesheet.png").convert_alpha()
-    for y in range(0, tileset_image.get_height(), TILE_SIZE):
-        for x in range(0, tileset_image.get_width(), TILE_SIZE):
-            img = clip_img(tileset_image, x, y, TILE_SIZE, TILE_SIZE)
+    for y in range(0, tileset_image.get_height(), tile_size[1]):
+        for x in range(0, tileset_image.get_width(), tile_size[0]):
+            img = clip_img(tileset_image, x, y, tile_size[0], tile_size[1])
             if not is_transparent(img):
-                tileset[y//TILE_SIZE * tileset_image.get_width()//TILE_SIZE + x//TILE_SIZE] = img
+                tileset[y//tile_size[1] * tileset_image.get_width()//tile_size[0] + x//tile_size[0]] = img
 
     data.update({data["id"]: data})
     images.update({data["id"]: tileset})

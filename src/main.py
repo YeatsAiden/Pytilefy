@@ -1,4 +1,5 @@
 import pygame as pg
+from pathlib import Path
 import time, sys
 
 from .assets import load_assets, images, data
@@ -11,6 +12,7 @@ from .renderer import Renderer
 from .grid import Grid
 from .mouse import Mouse
 from .display import Display
+from .entity_group import EntityGroup
 
 if len(sys.argv) <= 1:
     print("What file brah >:(")
@@ -35,10 +37,12 @@ class LevelEditor:
         self.camera_pos = pg.Vector2()
         self.camera.target = self.camera_pos
 
-        self.level_editor = Editor(sys.argv[1])
+        self.level_editor = Editor(Path(sys.argv[1]))
 
         self.grid = Grid(self.camera)
         self.mouse = Mouse()
+
+        self.group = EntityGroup(self.grid, self.mouse, self.display)
 
         # smol_font = Font(PATHS["fonts"] + "/" + "smol_font.png", [1, 2, 3], 1)
         # new_layer = Button(PATHS["buttons"] + "/" + "new_layer.png", DISPLAY_WIDTH - 36, 4)
@@ -68,11 +72,13 @@ class LevelEditor:
 
             self.grid.update()
             self.mouse.update()
+            self.display.update()
 
-            self.renderer.render_sprites({"display": self.display.image, "window": self.window})
+            self.group.blit(self.renderer)
+
+            self.renderer.render({"display": self.display.image, "window": self.window})
             self.renderer.clear()
 
-            self.mouse.draw(self.window)
             pg.display.update()
 
             self.frame_time = self.clock.tick(FPS) / 1000
