@@ -1,22 +1,21 @@
 import pygame as pg
 
 from .settings import *
-from .entity import Entity
-from .renderer import Renderer
+from .display import Display
 
 def ease_in_quart(x) -> float:
     return pg.math.clamp(x * x * x * x, 0, 1)
 
 class Camera:
-    def __init__(self, width: int, height: int) -> None:
-        self.view_rect: pg.FRect = pg.FRect(0, 0, width, height)
+    def __init__(self, top: int, left: int, bottom: int, right: int, display: Display) -> None:
+        self.display = display
+        self.bound_rect: pg.FRect = pg.FRect(left, top, self.display.image.width - left - right, self.display.image.height - top - bottom)
+        self.view_rect: pg.FRect = pg.FRect(0, 0, self.display.image.width, self.display.image.height)
 
         self.target_sprite = None
         self.target_pos = None
 
         self.scroll: pg.Vector2 = pg.Vector2()
-        self.to_center: pg.Vector2 = pg.Vector2()
-        self.scale: float = 1
 
     @property
     def target(self) -> pg.typing.Point:
@@ -25,7 +24,7 @@ class Camera:
         elif self.target_pos:
             return self.target_pos
         else:
-            return (DISPLAY_WIDTH//2, DISPLAY_HEIGHT//2)
+            return (self.display.image.width//2, self.display.image.height//2)
 
     @target.setter
     def target(self, value) -> None:
@@ -36,23 +35,16 @@ class Camera:
             self.target_sprite = None
             self.target_pos = value
         else:
-            self.target_pos = (DISPLAY_WIDTH//2, DISPLAY_HEIGHT//2)
+            self.target_pos = (self.display.image.width//2, self.display.image.height//2)
+
+    def follow_target(self, dt: float) -> None:
+        self.view_rect.center = self.target
+        self.bound_rect.center = self.view_rect.center
+        self.scroll.x += (self.bound_rect.x - self.scroll.x)
+        self.scroll.y += (self.bound_rect.y - self.scroll.y)
 
     @property
-    def mouse_pos_on_display(self) -> pg.Vector2:
-        mouse_x, mouse_y = pg.mouse.get_pos()
-        mouse_x = (mouse_x - self.to_center[0])/self.scale
-        mouse_y = (mouse_y - self.to_center[1])/self.scale
-        return pg.Vector2(mouse_x, mouse_y)
+    def mouse_pos_in_world(self) -> tuple[float, float]:
+        mouse_pos_on_display = self.display.mouse_pos_on_display
+        return mouse_pos_on_display[0] + self.bound_rect.x, mouse_pos_on_display[1] + self.bound_rect.y
 
-    def followtarget(self, dt: float) -> None:
-        self.view_rect.center = self.target
-        self.scroll.x += (self.view_rect.x - self.scroll.x)
-        self.scroll.y += (self.view_rect.y - self.scroll.y)
-
-    def move(self, dt: float) -> None:
-        keys_pressed = pg.key.get_pressed()
-        self.target.y -= keys_pressed[pg.K_UP] * 500 * dt
-        self.target.y += keys_pressed[pg.K_DOWN] * 500 * dt
-        self.target.x += keys_pressed[pg.K_RIGHT] * 500 * dt
-        self.target.x -= keys_pressed[pg.K_LEFT] * 500 * dt

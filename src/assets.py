@@ -76,5 +76,6 @@ def load_assets():
     load_spritesheet_from_dir(ASSETS_DIRECTORY / "props")
     load_spritesheet_from_dir(ASSETS_DIRECTORY / "spawns")
     load_tileset_from_dir(ASSETS_DIRECTORY / "tilesets" / "grass")
+    load_tileset_from_dir(ASSETS_DIRECTORY / "tilesets" / "default")
     load_image(ASSETS_DIRECTORY / "cursor" / "cursor.png")
 

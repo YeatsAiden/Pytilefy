@@ -4,21 +4,32 @@ import json
 from .settings import *
 from .assets import images, data
 from .common import *
+from .renderer import Renderer
 from .entity import Entity
+from .camera import Camera
 
-def tuple_to_json_coord(coord: tuple[int, int]) -> str:
+def tuple_to_json_pos(coord: tuple[int, int]) -> str:
     return f"{coord[0]};{coord[1]}"
 
-def json_to_tuple_coord(coord: str) -> tuple[int, int]:
+def json_to_tuple_pos(coord: str) -> tuple[int, int]:
     x, y = map(int, coord.split(";"))
     return (x, y)
 
+def convert_pos_to(level_data, convert):
+    for layer in level_data["layers"].values():
+        layer["chunks"] = {convert(chunk_coord): chunk for chunk_coord, chunk in layer["chunks"].items()}
+        for chunk_coord in layer["chunks"]:
+            layer["chunks"][chunk_coord] = {convert(tile_coord): tile for tile_coord, tile in layer["chunks"][chunk_coord].items()}
+
+
 class Level(Entity):
-    def __init__(self, file_path: pg.typing.FileLike) -> None:
+    def __init__(self, file_path: pg.typing.FileLike, camera: Camera) -> None:
         super().__init__()
         self.file = str(file_path)
+        self.camera = camera
+
         self.level_data = {
-            "start_position": [0, 0], # Top and left most tile coordinate
+            "start_pos": [0, 0], # Top and left most tile coordinate
             "height": 0, # Height of world in tiles
             "width": 0, # Width of world in tiles
             "layers": {},
@@ -36,12 +47,7 @@ class Level(Entity):
 
         # Chunk anatomy
         # (x, y): {
-        #     "on_grid_tiles": {
-        #         # Chunks with on grid tiles in them.
-        #         },
-        #     "off_grid_tiles": {
-        #         # Chunks with off grid tiles in them.
-        #         }
+        #       tiles (off grid and on grid)
         #     }
 
         try:
@@ -51,16 +57,14 @@ class Level(Entity):
             print(f"Level {self.file} doesn't exist")
             self.level_data["tile_size"] = TILE_SIZE
             self.level_data["chunk_size"] = CHUNK_SIZE
+            # with open(self.file, "w") as f:
+            #     json.dump(self.level_data, f)
 
 
         # changes all the keys from strings to tuples
-        for layer in self.level_data["layers"].values():
-            layer["chunks"] = {json_to_tuple_coord(chunk_coord): chunk for chunk_coord, chunk in layer["chunks"].items()}
-            for chunk_coord in layer["chunks"]:
-                layer["chunks"][chunk_coord]["on_grid_tiles"] = {json_to_tuple_coord(tile_coord): tile for tile_coord, tile in layer["chunks"][chunk_coord]["on_grid_tiles"].items()}
-                layer["chunks"][chunk_coord]["off_grid_tiles"] = {json_to_tuple_coord(tile_coord): tile for tile_coord, tile in layer["chunks"][chunk_coord]["off_grid_tiles"].items()}
+        convert_pos_to(self.level_data, json_to_tuple_pos)
 
-        self.level_rects = self.get_level_rects()
+        # self.level_rects = self.get_level_rects()
         # self.on_grid_tiles = {layer_id: set(layer["tiles"]) for layer_id, layer
         #                       in self.level_data["layers"].items() if
         #                       layer["on_grid"]}
@@ -69,21 +73,19 @@ class Level(Entity):
 
         self.target = "display"
 
-    def get_tile_pos_at(self, point: pg.typing.Point) -> tuple[int, int]:
-        return (point[0]//self.level_data["tile_size"][0], point[1]//self.level_data["tile_size"][1])
+    def get_tile_pos_at(self, x, y) -> tuple[int, int]:
+        tile_size = self.level_data["tile_size"]
+        return int(x//tile_size[0]), int(y//tile_size[1])
 
-    def get_chunk_pos_at(self, point: pg.typing.Point) -> tuple[int, int]:
+    def get_chunk_pos_at(self, x, y) -> tuple[int, int]:
         chunk_size = self.level_data["chunk_size"]
-        x, y = point[0]//chunk_size * chunk_size, point[1]//chunk_size * chunk_size
-        x += -1 if point[0] < x else 0
-        y += -1 if point[1] < y else 0
-        return (x, y)
+        return int(x//chunk_size), int(y//chunk_size)
 
     def greedy_horizontal_merger(self):
         rects = {}
         #FIXME: get rid of this var
         chunk_size = self.level_data["chunk_size"]
-        start_x, start_y = self.level_data["start_position"]
+        start_x, start_y = self.level_data["start_pos"]
         end_x, end_y = start_x + self.level_data["width"], start_y + self.level_data["height"]
 
         visited = {(j, i): False for i in range(start_y, end_y) for j in range(start_x, end_x)}
@@ -97,7 +99,7 @@ class Level(Entity):
             for i in range(start_y, end_y):
                 for j in range(start_x, end_x):
                     tile_pos = (j, i)
-                    chunk_pos = self.get_chunk_pos_at(tile_pos)
+                    chunk_pos = self.get_chunk_pos_at(*tile_pos)
 
                     chunk = layer["chunks"].get(chunk_pos)
                     if not chunk:
@@ -113,7 +115,7 @@ class Level(Entity):
                     rect_height = 1
 
                     next_tile_pos = (j + rect_width, i)
-                    next_chunk_pos = self.get_chunk_pos_at(next_tile_pos)
+                    next_chunk_pos = self.get_chunk_pos_at(*next_tile_pos)
 
                     next_chunk = layer["chunks"].get(next_chunk_pos)
                     next_tile = next_chunk["on_grid_tiles"].get(next_tile_pos)
@@ -126,7 +128,7 @@ class Level(Entity):
                         k = j
                         while k < j + rect_width:
                             next_tile_pos = (i + rect_height, k)
-                            next_chunk_pos = self.get_chunk_pos_at(next_tile)
+                            next_chunk_pos = self.get_chunk_pos_at(*next_tile_pos)
 
                             next_chunk = layer["chunks"].get(next_chunk_pos)
                             next_tile = next_chunk["on_grid_tiles"].get(next_tile_pos)
@@ -162,12 +164,12 @@ class Level(Entity):
 
             rects[layer_id] = {}
 
-            for tile_position, tile in layer["tiles"].items():
+            for tile_pos, tile in layer["tiles"].items():
                 spritesheet_id = tile["spritesheet_id"]
                 tile_id = tile["spritesheet_id"]
                 tile_rect = data[spritesheet_id]["sprites"][tile_id]["rect"]
-                x = round(tile_position[0], 3) + tile_rect["x"]
-                y = round(tile_position[1], 3) + tile_rect["y"]
+                x = round(tile_pos[0], 3) + tile_rect["x"]
+                y = round(tile_pos[1], 3) + tile_rect["y"]
                 w = tile_rect["w"]
                 h = tile_rect["h"]
                 rects[layer_id].update({tile_id: pg.FRect(x, y, w, h)})
@@ -179,39 +181,35 @@ class Level(Entity):
         rects.update(self.get_off_grid_tiles())
         return rects
 
-    def get_drawing_area(self, scroll: pg.Vector2):
-        #FIXME: make work with width and height tile size
+    @property
+    def drawing_area(self):
         area = {}
 
-        start_row = int(scroll.y // self.level_data["tile_size"])
-        end_row = int((scroll.y + DISPLAY_HEIGHT) // self.level_data["tile_size"]) + 1
-        start_col = int(scroll.x // self.level_data["tile_size"])
-        end_col = int((scroll.x + DISPLAY_WIDTH) // self.level_data["tile_size"]) + 1
+        # Drawing area anatomy
+        # area = {
+        #         layer_id: {
+        #             chunk_id_1, chunk_id_2, chunk_id_3
+        #             }
+        #         }
 
-        positions = {(x, y) for y in range(start_row, end_row + 1) for x in range(start_col, end_col + 1)}
+        chunk_size = self.level_data["chunk_size"]
 
-        camera_rect = pg.FRect(scroll.x, scroll.y, DISPLAY_WIDTH, DISPLAY_HEIGHT)
+        start_pos = self.get_chunk_pos_at(*self.get_tile_pos_at(*self.camera.bound_rect.topleft))
+        end_pos = self.get_chunk_pos_at(*self.get_tile_pos_at(self.camera.bound_rect.x + DISPLAY_WIDTH, self.camera.bound_rect.y + DISPLAY_HEIGHT))
+
+        positions = {(x, y) for y in range(start_pos[1], end_pos[1] + 1) for x in range(start_pos[0], end_pos[0] + 1)}
 
         for layer_id, layer in self.level_data["layers"].items():
-            if not layer["on_grid"] and layer["is_visible"]:
-                for tile_position in layer["tiles"]:
-                    if scroll.x <= tile_position[0] <= scroll.x + DISPLAY_WIDTH and scroll.y <= tile_position[1] <= scroll.y + DISPLAY_HEIGHT:
-                        #FIXME: make it collide with camera_rect
-                        area[layer_id].add(tile_position)
-            elif layer["on_grid"] and layer["is_visible"]:
-                area[layer_id] = positions & self.on_grid_tiles[layer_id]
+            if layer["is_visible"] == True:
+               area[layer_id] = positions & layer["chunks"].keys()
 
         return area
 
-    def draw(self, surface: pg.Surface, scroll: pg.Vector2):
-        #FIXME: edit to work with offgrid tiles
-        area = self.get_drawing_area(scroll)
-        for layer_id in self.layer_ids:
-            for tile_position in area[layer_id]:
-                x = int(tile_position[0])
-                y = int(tile_position[1])
-                tile = self.level_data["layers"][layer_id]["tiles"][tile_position]
-                tile_id = tile["id"]
-                tileset_id = tile["spritesheet_id"]
-                surface.blit(images[tileset_id][tile_id], (x - scroll.x, y - scroll.y))
+    def blit(self, renderer: Renderer) -> None:
+        tile_size = self.level_data["tile_size"]
+        for layer_id, layer in self.drawing_area.items():
+            for chunk_id in layer:
+                for tile_pos, tile in self.level_data["layers"][layer_id]["chunks"][chunk_id].items():
+                    image = images[tile["spritesheet_id"]][tile["id"]]
+                    renderer.blit(int(layer_id), self.target, image, (tile_pos[0] * tile_size[0] - self.camera.scroll[0], tile_pos[1] * tile_size[1] - self.camera.scroll[1]))
 

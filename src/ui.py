@@ -25,7 +25,7 @@ class Button:
             click = True
         return click
 
-    def set_position(self, x: int, y: int):
+    def set_pos(self, x: int, y: int):
         self.rect.topleft = [x, y]
 
     def draw(self, surf: pg.Surface):

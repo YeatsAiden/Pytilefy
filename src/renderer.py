@@ -13,8 +13,8 @@ class Renderer:
         for target_name in self.targets:
             self.queue[target_name] = []
 
-    def blit(self, z: int, target: str, surface: pg.Surface, position):
-        self.queue[target].append([z, self.order, surface, position])
+    def blit(self, z: int, target: str, surface: pg.Surface, pos):
+        self.queue[target].append([z, self.order, surface, pos])
         self.order += 1
 
     def render(self, targets: dict[str, pg.Surface]):
