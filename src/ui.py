@@ -61,12 +61,12 @@ class Font(Entity):
                 font[character] = characters[len(font)]
         return font
 
-    def blit(self, target_name: str, text: str, x, y, space: int, size: int):
+    def blit(self, target_name: str, text: str, x, y, space: int, char_size: int, between: int):
         x_pos = 0
         for letter in text:
             if letter == " ":
-                x_pos += self.space * size
+                x_pos += space * char_size
             else:
-                character_img = pg.transform.scale_by(self.font[letter], size)
+                character_img = pg.transform.scale_by(self.font[letter], char_size)
                 self.objects["Renderer"].blit(self.z, target_name, character_img, (x + x_pos, y))
-                x_pos += character_img.get_width() + size
+                x_pos += character_img.get_width() + between

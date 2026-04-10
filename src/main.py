@@ -68,10 +68,11 @@ class LevelEditor:
             self.window.fill("black")
 
             self.level_editor.place_tile()
-            self.smol_font.blit("display", str(self.level_editor.current_layer), DISPLAY_WIDTH/2 - len(str(self.level_editor.current_layer)) * 6, 360, 1, 3)
-            self.smol_font.blit("display", f"type: {self.level_editor.image_type[self.evel_editor.type_id]}".lower(), 4, 350, 1, 2)
-            self.smol_font.blit("display", f"visible: {self.level_editor.is_visible}".lower(), 4, 360, 1, 2)
-            self.smol_font.blit("display", f"collision: {self.level_editor.has_collisions}".lower(), 4, 370, 1, 2)
+            self.level_editor.delete_tile()
+            self.smol_font.blit("display", str(self.level_editor.current_layer), DISPLAY_WIDTH/2 - len(str(self.level_editor.current_layer)) * 6, 360, 1, 2, 1)
+            # self.smol_font.blit("display", f"type: {self.level_editor.image_type[self.evel_editor.type_id]}".lower(), 4, 350, 1, 2)
+            self.smol_font.blit("display", f"visible: {self.level_editor.is_visible}".lower(), 4, 360, 1, 2, 1)
+            self.smol_font.blit("display", f"collision: {self.level_editor.has_collisions}".lower(), 4, 370, 1, 2, 1)
 
             self.event_loop()
 

@@ -42,10 +42,11 @@ class Editor:
             # Is checking for non-existing layers/chunks
             current_layer = self.level.level_data["layers"].get(self.current_layer)
             if not current_layer:
-                self.level.level_data["layers"][self.current_layer] = {}
-                self.level.level_data["layers"][self.current_layer]["chunks"] = {}
-                self.level.level_data["layers"][self.current_layer]["is_visible"] = True
-                self.level.level_data["layers"][self.current_layer]["has_collisions"] = True
+                self.level.level_data["layers"][self.current_layer] = {
+                        "chunks": {},
+                        "is_visible": True,
+                        "has_collisions": True,
+                        }
 
             current_chunk = self.level.level_data["layers"][self.current_layer]["chunks"].get(chunk_pos)
             if not current_chunk:
@@ -58,7 +59,27 @@ class Editor:
                     }
 
     def delete_tile(self):
-        pass
+        mouse_pressed = pg.mouse.get_pressed()
+        mouse_pos = self.camera.mouse_pos_in_world
+
+        if mouse_pressed[2]:
+            tile_pos = self.level.get_tile_pos_at(*mouse_pos)
+            chunk_pos = self.level.get_chunk_pos_at(*tile_pos)
+
+            # Is checking for non-existing layers/chunks/tiles
+            current_layer = self.level.level_data["layers"].get(self.current_layer)
+            if not current_layer:
+                return
+
+            current_chunk = current_layer["chunks"].get(chunk_pos)
+            if not current_chunk:
+                return
+
+            current_tile = current_chunk.get(tile_pos)
+            if not current_tile:
+                return
+
+            current_tile = current_chunk.pop(tile_pos)
 
     def save_level(self):
         with open(self.level.file, "w") as f:

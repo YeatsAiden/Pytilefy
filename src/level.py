@@ -16,6 +16,9 @@ def json_to_tuple_pos(coord: str) -> tuple[int, int]:
     return (x, y)
 
 def convert_pos_to(level_data, convert):
+    for layer_id in list(level_data["layers"]):
+        level_data["layers"][int(layer_id)] = level_data["layers"].pop(layer_id)
+
     for layer in level_data["layers"].values():
         layer["chunks"] = {convert(chunk_coord): chunk for chunk_coord, chunk in layer["chunks"].items()}
         for chunk_coord in layer["chunks"]:

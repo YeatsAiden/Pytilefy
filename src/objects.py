@@ -19,7 +19,7 @@ class Objects:
     def register_object(self, obj: Object) -> None:
         if obj._singleton:
             self.objects["singletons"][obj._id] = obj
-        elif obj not in self.objects["groups"]:
+        elif obj._id not in self.objects["groups"]:
             self.objects["groups"][obj._id] = [obj]
         else:
             self.objects["groups"][obj._id].append(obj)
