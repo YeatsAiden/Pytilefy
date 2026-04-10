@@ -1,9 +1,11 @@
 import pygame as pg
 
+from .objects import Object
 
 # I swear this wasn't stolen
-class Renderer:
+class Renderer(Object):
     def __init__(self, targets: list[str]) -> None:
+        super().__init__(True)
         self.targets = targets + ["window"]
         self.queue: dict[str, list] = {target_name: [] for target_name in self.targets}
         self.order: int = 0
@@ -23,3 +25,4 @@ class Renderer:
                 self.queue[target_name].sort(key = lambda x:x[0])
                 for sprite in self.queue[target_name]:
                     target.blit(sprite[2], sprite[3])
+

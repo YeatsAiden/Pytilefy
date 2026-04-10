@@ -205,11 +205,11 @@ class Level(Entity):
 
         return area
 
-    def blit(self, renderer: Renderer) -> None:
+    def blit(self) -> None:
         tile_size = self.level_data["tile_size"]
         for layer_id, layer in self.drawing_area.items():
             for chunk_id in layer:
                 for tile_pos, tile in self.level_data["layers"][layer_id]["chunks"][chunk_id].items():
-                    image = images[tile["spritesheet_id"]][tile["id"]]
-                    renderer.blit(int(layer_id), self.target, image, (tile_pos[0] * tile_size[0] - self.camera.scroll[0], tile_pos[1] * tile_size[1] - self.camera.scroll[1]))
+                    image = images["tilesets"][tile["spritesheet_id"]][tile["id"]]
+                    self.objects["Renderer"].blit(int(layer_id), self.target, image, (tile_pos[0] * tile_size[0] - self.camera.scroll[0], tile_pos[1] * tile_size[1] - self.camera.scroll[1]))
 

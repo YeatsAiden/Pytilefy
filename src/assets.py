@@ -5,8 +5,14 @@ from .common import ASSETS_DIRECTORY
 from .settings import *
 
 
-images = {}
-data = {}
+images: dict[dict[str, dict[str, pg.Surface]] | str, pg.Surface] = {
+    "spritesheets": {},
+    "tilesets": {}
+}
+data = {
+    "spritesheets": {},
+    "tilesets": {}
+}
 
 def load_image(path: pathlib.Path):
     if path.name not in images:
@@ -35,12 +41,12 @@ def is_transparent(surface: pg.Surface):
     return True
 
 def load_tileset_from_dir(path: pathlib.Path):
-    data = {}
+    tileset_data = {}
 
     with open(str(path / "data.json"), "r") as f:
-        data = json.load(f)
+        tileset_data = json.load(f)
 
-    tile_size = data["tile_size"]
+    tile_size = tileset_data["tile_size"]
 
     tileset = {}
     tileset_image = pg.image.load(path / "spritesheet.png").convert_alpha()
@@ -50,18 +56,18 @@ def load_tileset_from_dir(path: pathlib.Path):
             if not is_transparent(img):
                 tileset[y//tile_size[1] * tileset_image.get_width()//tile_size[0] + x//tile_size[0]] = img
 
-    data.update({data["id"]: data})
-    images.update({data["id"]: tileset})
+    data["tilesets"].update({tileset_data["id"]: tileset_data})
+    images["tilesets"].update({tileset_data["id"]: tileset})
 
 def load_spritesheet_from_dir(path: pathlib.Path):
-    data = {}
+    spritesheet_data = {}
 
     with open(str(path / "data.json"), "r") as f:
-        data = json.load(f)
+        spritesheet_data = json.load(f)
 
     spritesheet = {}
     spritesheet_image = pg.image.load(path / "spritesheet.png").convert_alpha()
-    for sprite_id, sprite in data["sprites"].items():
+    for sprite_id, sprite in spritesheet_data["sprites"].items():
         outline = sprite["outline"]
         x = outline["x"]
         y = outline["y"]
@@ -69,8 +75,8 @@ def load_spritesheet_from_dir(path: pathlib.Path):
         h = outline["h"]
         spritesheet[sprite_id] = clip_img(spritesheet_image, x, y, w, h)
 
-    data.update({data["id"]: data})
-    images.update({data["id"]: spritesheet})
+    data["spritesheets"].update({spritesheet_data["id"]: spritesheet_data})
+    images["spritesheets"].update({spritesheet_data["id"]: spritesheet})
 
 def load_assets():
     load_spritesheet_from_dir(ASSETS_DIRECTORY / "props")
@@ -78,4 +84,6 @@ def load_assets():
     load_tileset_from_dir(ASSETS_DIRECTORY / "tilesets" / "grass")
     load_tileset_from_dir(ASSETS_DIRECTORY / "tilesets" / "default")
     load_image(ASSETS_DIRECTORY / "cursor" / "cursor.png")
+    load_image(ASSETS_DIRECTORY / "fonts" / "smol_font.png")
+    load_images_from_dir(ASSETS_DIRECTORY / "buttons")
 

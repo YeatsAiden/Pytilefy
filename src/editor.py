@@ -5,8 +5,8 @@ import json
 from . import settings
 from .camera import Camera
 from .level import Level, tuple_to_json_pos, convert_pos_to
-from .renderer import Renderer
 
+#FIXME: Fix the reason for levels being saved improperly
 
 class Editor:
     def __init__(self, file_path: Path, camera: Camera) -> None:
@@ -14,8 +14,10 @@ class Editor:
         settings.TILE_SIZE = self.level.level_data["tile_size"]
         settings.CHUNK_SIZE = self.level.level_data["chunk_size"]
 
+        self.camera = camera
+
         # 21 is the single tile
-        self.current_layer: int = 1000
+        self.current_layer: int = 0
 
         self.tile_type = "tile"
         self.spritesheet_id: str = "default"
@@ -29,9 +31,9 @@ class Editor:
         self.has_collisions = True
         self.on_grid = True
 
-    def place_tile(self, camera: Camera):
+    def place_tile(self):
         mouse_pressed = pg.mouse.get_pressed()
-        mouse_pos = camera.mouse_pos_in_world
+        mouse_pos = self.camera.mouse_pos_in_world
 
         if mouse_pressed[0]:
             tile_pos = self.level.get_tile_pos_at(*mouse_pos) if self.on_grid else mouse_pos
@@ -55,7 +57,7 @@ class Editor:
                     "spritesheet_id": self.spritesheet_id,
                     }
 
-    def delete_tile(self, tile_pos_key: str):
+    def delete_tile(self):
         pass
 
     def save_level(self):
@@ -66,6 +68,3 @@ class Editor:
 
     def auto_tile(self):
         pass
-
-    def draw(self, renderer: Renderer):
-        self.level.blit(renderer)

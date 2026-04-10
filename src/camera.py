@@ -2,13 +2,16 @@ import pygame as pg
 
 from .settings import *
 from .display import Display
+from .mouse import Mouse
+from .objects import Object
 
 def ease_in_quart(x) -> float:
     return pg.math.clamp(x * x * x * x, 0, 1)
 
-class Camera:
-    def __init__(self, top: int, left: int, bottom: int, right: int, display: Display) -> None:
-        self.display = display
+class Camera(Object):
+    def __init__(self, top: int, left: int, bottom: int, right: int) -> None:
+        super().__init__()
+        self.display: Display = self.objects["Display"]
         self.bound_rect: pg.FRect = pg.FRect(left, top, self.display.image.width - left - right, self.display.image.height - top - bottom)
         self.view_rect: pg.FRect = pg.FRect(0, 0, self.display.image.width, self.display.image.height)
 
@@ -45,6 +48,6 @@ class Camera:
 
     @property
     def mouse_pos_in_world(self) -> tuple[float, float]:
-        mouse_pos_on_display = self.display.mouse_pos_on_display
-        return mouse_pos_on_display[0] + self.bound_rect.x, mouse_pos_on_display[1] + self.bound_rect.y
+        mouse_display_pos = self.objects["Mouse"].display_pos
+        return mouse_display_pos[0] + self.bound_rect.x, mouse_display_pos[1] + self.bound_rect.y
 
