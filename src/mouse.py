@@ -1,11 +1,12 @@
 import pygame as pg
 
 from .entity import Entity, EntityGroup
+from .display import Display
 
 class Mouse(Entity):
     def __init__(self, ui_elements: EntityGroup) -> None:
         super().__init__(True)
-        self.display = self.objects["Display"]
+        self.display: Display = self.objects["Display"]
 
         self.display_pos: pg.Vector2 = pg.Vector2()
         self.ui_elements = ui_elements
@@ -17,8 +18,11 @@ class Mouse(Entity):
     def over_element(self) -> Entity | None:
         highest_element = None
         for ui_element in self.ui_elements:
-            if ui_element.rect.collidepoint(self.pos) and (highest_element == None or highest_element.z < ui_element.z ):
+            if ui_element.rect.collidepoint(self.display_pos) and (highest_element == None or highest_element.z < ui_element.z ):
                 highest_element = ui_element
+
+        if self.display.rect.collidepoint(self.display_pos) and highest_element == None:
+            highest_element = self.display
 
         return highest_element
 

@@ -5,11 +5,13 @@ import json
 from . import settings
 from .camera import Camera
 from .level import Level, tuple_to_json_pos, convert_pos_to
+from .objects import Object
 
 #FIXME: Fix the reason for levels being saved improperly
 
-class Editor:
+class Editor(Object):
     def __init__(self, file_path: Path, camera: Camera) -> None:
+        super().__init__()
         self.level: Level = Level(file_path, camera)
         settings.TILE_SIZE = self.level.level_data["tile_size"]
         settings.CHUNK_SIZE = self.level.level_data["chunk_size"]
@@ -35,7 +37,7 @@ class Editor:
         mouse_pressed = pg.mouse.get_pressed()
         mouse_pos = self.camera.mouse_pos_in_world
 
-        if mouse_pressed[0]:
+        if mouse_pressed[0] and self.objects["Mouse"].over_element == self.objects["Display"]:
             tile_pos = self.level.get_tile_pos_at(*mouse_pos) if self.on_grid else mouse_pos
             chunk_pos = self.level.get_chunk_pos_at(*tile_pos)
 
@@ -62,7 +64,7 @@ class Editor:
         mouse_pressed = pg.mouse.get_pressed()
         mouse_pos = self.camera.mouse_pos_in_world
 
-        if mouse_pressed[2]:
+        if mouse_pressed[2] and self.objects["Mouse"].over_element == self.objects["Display"]:
             tile_pos = self.level.get_tile_pos_at(*mouse_pos)
             chunk_pos = self.level.get_chunk_pos_at(*tile_pos)
 

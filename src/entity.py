@@ -36,6 +36,10 @@ class EntityGroup(Object):
         for entity in self.entities:
             entity.blit()
 
+    def update(self) -> None:
+        for entity in self.entities:
+            entity.update()
+
     def __iter__(self):
         for entity in self.entities:
             yield entity

@@ -38,7 +38,6 @@ class LevelEditor:
         self.level_editor = Editor(Path(sys.argv[1]), self.camera)
 
         self.ui_elements = EntityGroup(
-            self.display,
             *[Button(0, 0, images["tilesets"][tileset][0], lambda:setattr(self.level_editor, "spritesheet_id", tileset)) for tileset in images["tilesets"]],
             Button(
                 DISPLAY_WIDTH/2 + len(str(self.level_editor.current_layer)) * 6 + 6,
@@ -70,7 +69,7 @@ class LevelEditor:
             self.level_editor.place_tile()
             self.level_editor.delete_tile()
             self.smol_font.blit("display", str(self.level_editor.current_layer), DISPLAY_WIDTH/2 - len(str(self.level_editor.current_layer)) * 6, 360, 1, 2, 1)
-            # self.smol_font.blit("display", f"type: {self.level_editor.image_type[self.evel_editor.type_id]}".lower(), 4, 350, 1, 2)
+            self.smol_font.blit("display", f"type: {self.level_editor.tile_type}".lower(), 4, 350, 1, 2, 1)
             self.smol_font.blit("display", f"visible: {self.level_editor.is_visible}".lower(), 4, 360, 1, 2, 1)
             self.smol_font.blit("display", f"collision: {self.level_editor.has_collisions}".lower(), 4, 370, 1, 2, 1)
 
@@ -81,6 +80,7 @@ class LevelEditor:
             self.mouse.update()
             self.display.update()
             self.camera.follow_target(self.frame_time)
+            self.ui_elements.update()
 
             self.group.blit()
             self.ui_elements.blit()

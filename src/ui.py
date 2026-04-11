@@ -16,7 +16,7 @@ class Button(Entity):
         self.size = self.image.size
         self.func = func
 
-        self.click_cooldown = 1
+        self.click_cooldown = 0.1
         self.time_since_click = 0
 
         self.target = "ui"
