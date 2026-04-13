@@ -21,7 +21,7 @@ class Mouse(Entity):
             if ui_element.rect.collidepoint(self.display_pos) and (highest_element == None or highest_element.z < ui_element.z ):
                 highest_element = ui_element
 
-        if self.display.rect.collidepoint(self.display_pos) and highest_element == None:
+        if self.display.rect.collidepoint(self.pos) and highest_element == None:
             highest_element = self.display
 
         return highest_element

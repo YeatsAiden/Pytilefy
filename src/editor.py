@@ -7,14 +7,16 @@ from .camera import Camera
 from .level import Level, tuple_to_json_pos, convert_pos_to
 from .objects import Object
 
-#FIXME: Fix the reason for levels being saved improperly
+# NOTE: order here matters for auto tiling, DO NOT CHANGE
+directions = [(-1, -1), (0, -1), (1, -1), (-1, 0), (0, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
+
 
 class Editor(Object):
     def __init__(self, file_path: Path, camera: Camera) -> None:
         super().__init__()
         self.level: Level = Level(file_path, camera)
-        settings.TILE_SIZE = self.level.level_data["tile_size"]
-        settings.CHUNK_SIZE = self.level.level_data["chunk_size"]
+        settings.TILE_SIZE = self.level.data["tile_size"]
+        settings.CHUNK_SIZE = self.level.data["chunk_size"]
 
         self.camera = camera
 
@@ -27,7 +29,7 @@ class Editor(Object):
         self.tile_off_set = [0, 0]
 
         # Tile anatomy
-        # (x, y): "type" "id" "spritesheet_id" "off_set" (for tiles that don't exactly fit the grid)
+        # (x, y): "type" "id" "spritesheet_id"
 
         self.is_visible = True
         self.has_collisions = True
@@ -42,19 +44,19 @@ class Editor(Object):
             chunk_pos = self.level.get_chunk_pos_at(*tile_pos)
 
             # Is checking for non-existing layers/chunks
-            current_layer = self.level.level_data["layers"].get(self.current_layer)
+            current_layer = self.level.data["layers"].get(self.current_layer)
             if not current_layer:
-                self.level.level_data["layers"][self.current_layer] = {
+                self.level.data["layers"][self.current_layer] = {
                         "chunks": {},
                         "is_visible": True,
                         "has_collisions": True,
                         }
 
-            current_chunk = self.level.level_data["layers"][self.current_layer]["chunks"].get(chunk_pos)
+            current_chunk = self.level.data["layers"][self.current_layer]["chunks"].get(chunk_pos)
             if not current_chunk:
-                self.level.level_data["layers"][self.current_layer]["chunks"][chunk_pos] = {}
+                self.level.data["layers"][self.current_layer]["chunks"][chunk_pos] = {}
 
-            self.level.level_data["layers"][self.current_layer]["chunks"][chunk_pos][tile_pos] = {
+            self.level.data["layers"][self.current_layer]["chunks"][chunk_pos][tile_pos] = {
                     "type": self.tile_type,
                     "id": self.tile_id,
                     "spritesheet_id": self.spritesheet_id,
@@ -69,7 +71,7 @@ class Editor(Object):
             chunk_pos = self.level.get_chunk_pos_at(*tile_pos)
 
             # Is checking for non-existing layers/chunks/tiles
-            current_layer = self.level.level_data["layers"].get(self.current_layer)
+            current_layer = self.level.data["layers"].get(self.current_layer)
             if not current_layer:
                 return
 
@@ -85,9 +87,22 @@ class Editor(Object):
 
     def save_level(self):
         with open(self.level.file, "w") as f:
-            level = self.level.level_data.copy()
+            level = self.level.data.copy()
             convert_pos_to(level, tuple_to_json_pos)
             json.dump(level, f)
 
-    def auto_tile(self):
-        pass
+    def auto_tile(self, tile_pos):
+        start_pos = (tile_pos[0] - 1, tile_pos[1] - 1)
+        end_pos = (tile_pos[0] + 1, tile_pos[1] + 1)
+
+        layer = self.level.data["layers"][self.current_layer]
+        is_visible = layer["is_visible"]
+
+        if is_visible == True:
+            for y in range(start_pos[1], end_pos[1]):
+                for x in range(start_pos[0], start_pos[1]):
+                    for dx, dy in directions:
+                        pass
+
+                        # if layer["chunks"]
+
